@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Unemployment Rate By State</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            width: 600px;
+            height: 400px;
+        }
+    </style>
+
+    <style>
+        #map { width: 800px; height: 500px; }
+    .info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; }
+    .info h4 { margin: 0 0 5px; color: #777; }
+    .legend { text-align: left; line-height: 18px; color: #555; } .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }</style>
+</head>
+<body>
+
+<div id='map'></div>
+
+<script type="text/javascript" src="us-states.js"></script>
+
+<script type="text/javascript">
+
+    let map = L.map('map').setView([37.8, -96], 4);
+
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+        maxZoom: 18,
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        id: 'mapbox/light-v9'
+    }).addTo(map);
+
+    let detroit = L.marker([42.3523699,-83.3793885]).addTo(map);
+    let stLouis = L.marker([38.6530169,-90.3835469]).addTo(map);
+    let oakland = L.marker([37.7586346,-122.3753929]).addTo(map);
+    let memphis = L.marker([35.1288636,-90.2509769]).addTo(map);
+    let birmingham = L.marker([33.5311585,-86.9902225]).addTo(map);
+    let atlanta = L.marker([33.7676338,-84.5606895]).addTo(map);
+    let baltimore = L.marker([39.2846854,-76.6905369]).addTo(map);
+    let stockton = L.marker([37.9729404,-121.4419619]).addTo(map);
+    let cleveland = L.marker([41.497447,-81.8459438,]).addTo(map);
+    let buffalo = L.marker([42.8962176,-78.9344823]).addTo(map);
+
+
+    detroit.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>Detroit, Michigan: Ranked #1<br> Biggest Issue : Gang Violence").openPopup();
+    stLouis.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>St Louis, Missouri: Ranked #2<br> Biggest Issue : Drug Trafficking");
+    oakland.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>Oakland, California: Ranked #3<br> Biggest Issue : Gang Violence, Drug Related Crimes");
+    memphis.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>Memphis, Tennessee: Ranked #4<br> Biggest Issue : Criminal Culture");
+    birmingham.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>Birmingham, Alabama: Ranked #5<br> Biggest Issue : Drug Related Crimes");
+    atlanta.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>Atlanta, Georgia: Ranked #6<br> Biggest Issue : Drugs, Robbery, Assaults");
+    baltimore.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>Baltimore, Maryland: Ranked #7<br> Biggest Issue : Drug Trafficking, ");
+    stockton.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>Stockton, California: Ranked #8<br> Biggest Issue : Drug Trafficking, Violence");
+    cleveland.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>Cleveland, Ohio: Ranked #9<br> Biggest Issue : Lack of Police, Violence");
+    buffalo.bindPopup("<b>Top Ten Most Dangerous City in the Country</b><br>Buffalo, New York: Ranked #10<br> Biggest Issue : Gang Violence");
+
+
+    // control that shows state info on hover
+    let info = L.control();
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info');
+        this.update();
+        return this._div;
+    };
+
+    info.update = function (props) {
+        this._div.innerHTML = '<h4>Unemployment Rate by State</h4>' +  (props ?
+            '<b>' + props.name + '</b><br />' + props.unemployment + ' </b><br /> '
+            : 'Hover over a state');
+    };
+
+    info.addTo(map);
+
+
+
+    function getColor(d) {
+        return d > 6 ? '#80603E' :
+            d > 5  ? '#A35400' :
+                d > 4 ? '#FF8400' :
+                    d > 3  ? '#FFB538' :
+                        d > 2   ? '#FFB56B' :
+                            d > 1   ? '#FFB56B' :
+                                // d > 1   ? '#92dff3' :
+                                    '#FFB56B';
+    }
+
+    function style(feature) {
+        return {
+            weight: 2,
+            opacity: 1,
+            color: 'white',
+            dashArray: '3',
+            fillOpacity: 0.7,
+            fillColor: getColor(feature.properties.unemployment)
+        };
+    }
+
+    function highlightFeature(e) {
+        let layer = e.target;
+
+        layer.setStyle({
+            weight: 5,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+        }
+
+        info.update(layer.feature.properties);
+    }
+
+    let geojson;
+
+    function resetHighlight(e) {
+        geojson.resetStyle(e.target);
+        info.update();
+    }
+
+    function zoomToFeature(e) {
+        map.fitBounds(e.target.getBounds());
+    }
+
+    function onEachFeature(feature, layer) {
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+            click: zoomToFeature
+        });
+    }
+
+    geojson = L.geoJson(statesData, {
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(map);
+
+
+    let legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function (map) {
+
+        let div = L.DomUtil.create('div', 'info legend'),
+            grades = [2, 3, 4, 5, 6],
+            labels = [],
+            from, to;
+
+        for (let i = 0; i < grades.length; i++) {
+            from = grades[i];
+            to = grades[i + 1];
+
+            labels.push(
+                '<i style="background:' + getColor(from + 1) + '"></i> ' +
+                from + (to ? '&ndash;' + to : '+'));
+        }
+
+        div.innerHTML = labels.join('<br>');
+        return div;
+    };
+
+    legend.addTo(map);
+
+</script>
+
+
+
+</body>
+</html>
