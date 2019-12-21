@@ -26,7 +26,7 @@
 
     <style>
         #map { width: 800px; height: 500px; }
-    .info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; }
+    .info { padding: 6px 8px; font: 12px/14px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; }
     .info h4 { margin: 0 0 5px; color: #777; }
     .legend { text-align: left; line-height: 18px; color: #555; } .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }</style>
 </head>
@@ -38,7 +38,7 @@
 
 <script type="text/javascript">
 
-    let map = L.map('map').setView([37.8, -96], 4);
+    var map = L.map('map').setView([37.8, -96], 4);
 
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
         maxZoom: 18,
@@ -73,7 +73,7 @@
 
 
     // control that shows state info on hover
-    let info = L.control();
+    var info = L.control();
 
     info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'info');
@@ -82,24 +82,25 @@
     };
 
     info.update = function (props) {
-        this._div.innerHTML = '<h4>Unemployment Rate by State</h4>' +  (props ?
-            '<b>' + props.name + '</b><br />' + props.unemployment + ' </b><br /> '
+        this._div.innerHTML = '<h4>Unemployment Rate by State (Jan 2018)</h4>' +  (props ?
+            '<b>' + props.name + '</b><br />' +  'January 2017: ' + props.unemployment17 + '%' +
+            '</b><br />' + 'January 2018: ' + props.unemployment18 + '%' +
+            '</b><br />' + 'Net Change: ' + props.netchange
             : 'Hover over a state');
     };
 
     info.addTo(map);
 
 
-
+    // get color depending on population density value
     function getColor(d) {
-        return d > 6 ? '#80603E' :
-            d > 5  ? '#A35400' :
-                d > 4 ? '#FF8400' :
-                    d > 3  ? '#FFB538' :
-                        d > 2   ? '#FFB56B' :
-                            d > 1   ? '#FFB56B' :
-                                // d > 1   ? '#92dff3' :
-                                    '#FFB56B';
+        return d > 12  ? '#581845' :
+                 d > 6  ? '#900C3F' :
+                    d > 5  ? '#C70039' :
+                        d > 4   ? '#FF5733' :
+                            d > 3   ? '#FFC300' :
+                                d > 2   ? '#DAF7A6' :
+                                    '#FFEDA0';
     }
 
     function style(feature) {
@@ -109,12 +110,12 @@
             color: 'white',
             dashArray: '3',
             fillOpacity: 0.7,
-            fillColor: getColor(feature.properties.unemployment)
+            fillColor: getColor(feature.properties.unemployment18)
         };
     }
 
     function highlightFeature(e) {
-        let layer = e.target;
+        var layer = e.target;
 
         layer.setStyle({
             weight: 5,
@@ -130,7 +131,7 @@
         info.update(layer.feature.properties);
     }
 
-    let geojson;
+    var geojson;
 
     function resetHighlight(e) {
         geojson.resetStyle(e.target);
@@ -155,16 +156,16 @@
     }).addTo(map);
 
 
-    let legend = L.control({position: 'bottomright'});
+    var legend = L.control({position: 'bottomright'});
 
     legend.onAdd = function (map) {
 
-        let div = L.DomUtil.create('div', 'info legend'),
-            grades = [2, 3, 4, 5, 6],
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 2, 3, 4, 5, 6, 12],
             labels = [],
             from, to;
 
-        for (let i = 0; i < grades.length; i++) {
+        for (var i = 0; i < grades.length; i++) {
             from = grades[i];
             to = grades[i + 1];
 
